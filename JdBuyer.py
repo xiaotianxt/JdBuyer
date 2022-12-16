@@ -93,12 +93,11 @@ class Buyer(object):
             time.sleep(stockInterval)
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     # 商品sku
-    skuId = '100015253059'
+    skuIds = ['100036517586', '100040452006', '100021455115', '100044299403']
     # 区域id(可根据工程 area_id 目录查找)
-    areaId = '1_2901_55554_0'
+    areaId = '1_2800_2850'
     # 购买数量
     skuNum = 1
     # 库存查询间隔(秒)
@@ -108,9 +107,23 @@ if __name__ == '__main__':
     # 下单尝试间隔(秒)
     submitInterval = 5
     # 程序开始执行时间(晚于当前时间立即执行，适用于定时抢购类)
-    buyTime = '2022-10-10 00:00:00'
+    buyTime = '2022-12-16 11:59:00'
 
-    buyer = Buyer()  # 初始化
-    buyer.loginByQrCode()
-    buyer.buyItemInStock(skuId, areaId, skuNum, stockInterval,
-                         submitRetry, submitInterval, buyTime)
+    import multiprocessing
+
+    buyers = []
+    processes = []
+
+    for skuId in skuIds:
+        buyer = Buyer()
+        buyer.loginByQrCode()
+        p = multiprocessing.Process(target=buyer.buyItemInStock, args=(
+            skuId, areaId, skuNum, stockInterval, submitRetry, submitInterval, buyTime))
+        buyers.append(p)
+        processes.append(p)
+
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
